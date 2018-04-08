@@ -1,0 +1,42 @@
+
+<div *ngIf="event">
+    <h2><span>Event</span> {{event.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span>Type</span></dt>
+        <dd>
+            <span>{{event.type}}</span>
+        </dd>
+        <dt><span>Created</span></dt>
+        <dd>
+            <span>{{event.created | date:'medium'}}</span>
+        </dd>
+        <dt><span>Publisher</span></dt>
+        <dd>
+            <div *ngIf="event.publisherId">
+                <a [routerLink]="['/publisher-opt-job', event.publisherId]">{{event.publisherId}}</a>
+            </div>
+        </dd>
+        <dt><span>Campaign</span></dt>
+        <dd>
+            <div *ngIf="event.campaignId">
+                <a [routerLink]="['/campaign-opt-job', event.campaignId]">{{event.campaignId}}</a>
+            </div>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'event-opt-job/'+ event.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span> Edit</span>
+    </button>
+</div>

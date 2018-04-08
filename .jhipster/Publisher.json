@@ -1,0 +1,39 @@
+{
+    "fluentMethods": true,
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "events",
+            "otherEntityName": "event",
+            "otherEntityRelationshipName": "publisher"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "campaignRecord",
+            "otherEntityName": "campaignRecord",
+            "otherEntityRelationshipName": "publisher"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "blacklistRecord",
+            "otherEntityName": "blackListRecord",
+            "otherEntityRelationshipName": "publisher"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "name",
+            "fieldType": "String",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "changelogDate": "20180408114811",
+    "entityTableName": "publisher",
+    "dto": "mapstruct",
+    "pagination": "infinite-scroll",
+    "service": "serviceImpl",
+    "jpaMetamodelFiltering": false,
+    "angularJSSuffix": "optJob"
+}
