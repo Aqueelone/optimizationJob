@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <!--
+        Added the constraints for entity Campaign.
+    -->
+    <changeSet id="20180408114812-2" author="jhipster">
+        
+        <addForeignKeyConstraint baseColumnNames="optimization_props_id"
+                                 baseTableName="campaign"
+                                 constraintName="fk_campaign_optimization_props_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="optimization_props"/>
+
+        <addForeignKeyConstraint baseColumnNames="blacklist_id"
+                                 baseTableName="campaign"
+                                 constraintName="fk_campaign_blacklist_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="black_list"/>
+
+    </changeSet>
+</databaseChangeLog>

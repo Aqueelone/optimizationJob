@@ -1,0 +1,34 @@
+
+<div *ngIf="blackListRecord">
+    <h2><span>Black List Record</span> {{blackListRecord.id}}</h2>
+    <hr>
+    <jhi-alert-error></jhi-alert-error>
+    <dl class="row-md jh-entity-details">
+        <dt><span>Publisher</span></dt>
+        <dd>
+            <div *ngIf="blackListRecord.publisherId">
+                <a [routerLink]="['/publisher-opt-job', blackListRecord.publisherId]">{{blackListRecord.publisherId}}</a>
+            </div>
+        </dd>
+        <dt><span>Black List</span></dt>
+        <dd>
+            <div *ngIf="blackListRecord.blackListId">
+                <a [routerLink]="['/black-list-opt-job', blackListRecord.blackListId]">{{blackListRecord.blackListId}}</a>
+            </div>
+        </dd>
+    </dl>
+
+    <button type="submit"
+            (click)="previousState()"
+            class="btn btn-info">
+        <span class="fa fa-arrow-left"></span>&nbsp;<span> Back</span>
+    </button>
+
+    <button type="button"
+            [routerLink]="['/', { outlets: { popup: 'black-list-record-opt-job/'+ blackListRecord.id + '/edit'} }]"
+            replaceUrl="true"
+            queryParamsHandling="merge"
+            class="btn btn-primary">
+        <span class="fa fa-pencil"></span>&nbsp;<span> Edit</span>
+    </button>
+</div>

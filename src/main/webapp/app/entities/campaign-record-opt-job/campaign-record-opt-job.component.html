@@ -1,0 +1,68 @@
+<div>
+    <h2>
+        <span>Campaign Records</span>
+        <button class="btn btn-primary float-right jh-create-entity create-campaign-record-opt-job" [routerLink]="['/', { outlets: { popup: ['campaign-record-opt-job-new'] } }]">
+            <span class="fa fa-plus"></span>
+            <span >
+            Create new Campaign Record
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <div class="row">
+    </div>
+    <br/>
+    <div class="table-responsive" *ngIf="campaignRecords">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="reset.bind(this)">
+            <th jhiSortBy="id"><span>ID</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="publisherId"><span>Publisher</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="campaignId"><span>Campaign</span> <span class="fa fa-sort"></span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let campaignRecord of campaignRecords ;trackBy: trackId">
+                <td><a [routerLink]="['../campaign-record-opt-job', campaignRecord.id ]">{{campaignRecord.id}}</a></td>
+                <td>
+                    <div *ngIf="campaignRecord.publisherId">
+                        <a [routerLink]="['../publisher-opt-job', campaignRecord.publisherId  ]" >{{campaignRecord.publisherId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="campaignRecord.campaignId">
+                        <a [routerLink]="['../campaign-opt-job', campaignRecord.campaignId  ]" >{{campaignRecord.campaignId}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['../campaign-record-opt-job', campaignRecord.id ]"
+                                class="btn btn-info btn-sm">
+                            <span class="fa fa-eye"></span>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'campaign-record-opt-job/'+ campaignRecord.id + '/edit'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-primary btn-sm">
+                            <span class="fa fa-pencil"></span>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'campaign-record-opt-job/'+ campaignRecord.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <span class="fa fa-remove"></span>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

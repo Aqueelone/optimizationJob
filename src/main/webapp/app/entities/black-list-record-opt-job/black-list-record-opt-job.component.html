@@ -1,0 +1,68 @@
+<div>
+    <h2>
+        <span>Black List Records</span>
+        <button class="btn btn-primary float-right jh-create-entity create-black-list-record-opt-job" [routerLink]="['/', { outlets: { popup: ['black-list-record-opt-job-new'] } }]">
+            <span class="fa fa-plus"></span>
+            <span >
+            Create new Black List Record
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <div class="row">
+    </div>
+    <br/>
+    <div class="table-responsive" *ngIf="blackListRecords">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="reset.bind(this)">
+            <th jhiSortBy="id"><span>ID</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="publisherId"><span>Publisher</span> <span class="fa fa-sort"></span></th>
+            <th jhiSortBy="blackListId"><span>Black List</span> <span class="fa fa-sort"></span></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let blackListRecord of blackListRecords ;trackBy: trackId">
+                <td><a [routerLink]="['../black-list-record-opt-job', blackListRecord.id ]">{{blackListRecord.id}}</a></td>
+                <td>
+                    <div *ngIf="blackListRecord.publisherId">
+                        <a [routerLink]="['../publisher-opt-job', blackListRecord.publisherId  ]" >{{blackListRecord.publisherId}}</a>
+                    </div>
+                </td>
+                <td>
+                    <div *ngIf="blackListRecord.blackListId">
+                        <a [routerLink]="['../black-list-opt-job', blackListRecord.blackListId  ]" >{{blackListRecord.blackListId}}</a>
+                    </div>
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['../black-list-record-opt-job', blackListRecord.id ]"
+                                class="btn btn-info btn-sm">
+                            <span class="fa fa-eye"></span>
+                            <span class="d-none d-md-inline">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'black-list-record-opt-job/'+ blackListRecord.id + '/edit'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-primary btn-sm">
+                            <span class="fa fa-pencil"></span>
+                            <span class="d-none d-md-inline">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'black-list-record-opt-job/'+ blackListRecord.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <span class="fa fa-remove"></span>
+                            <span class="d-none d-md-inline">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
