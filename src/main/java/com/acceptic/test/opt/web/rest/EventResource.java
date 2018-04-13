@@ -20,6 +20,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,6 +54,10 @@ public class EventResource {
         log.debug("REST request to save Event : {}", eventDTO);
         if (eventDTO.getId() != null) {
             throw new BadRequestAlertException("A new event cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+        if(eventDTO.getCreated() == null) {
+            eventDTO.setCreated(Instant.now());
+            log.debug("REST request fixed time with {%1} to save Event : {%2}", eventDTO.getCreated(), eventDTO);
         }
         EventDTO result = eventService.save(eventDTO);
         return ResponseEntity.created(new URI("/api/events/" + result.getId()))
