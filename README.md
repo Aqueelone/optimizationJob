@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Aqueelone/optimizationJob.svg?branch=master)](https://travis-ci.org/Aqueelone/optimizationJob)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 # optimizationJob
 This application was generated using JHipster 4.14.2, you can find documentation and help at [http://www.jhipster.tech/documentation-archive/v4.14.2](http://www.jhipster.tech/documentation-archive/v4.14.2).
