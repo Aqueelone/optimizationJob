@@ -4,8 +4,6 @@ import com.acceptic.test.opt.domain.*;
 import com.acceptic.test.opt.domain.enumeration.EventType;
 import com.acceptic.test.opt.domain.enumeration.ResultSet;
 import com.acceptic.test.opt.repository.*;
-import com.acceptic.test.opt.service.CampaignRecordService;
-import com.acceptic.test.opt.service.EventService;
 import com.acceptic.test.opt.service.dto.CampaignRecordDTO;
 import com.acceptic.test.opt.service.dto.EventDTO;
 import com.acceptic.test.opt.service.mapper.CampaignRecordMapper;
@@ -16,20 +14,14 @@ import com.codahale.metrics.annotation.Timed;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.beans.Expression;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Supplier;
-
-import static java.util.Optional.*;
 
 /**
  * OptimizationJob controller
@@ -83,32 +75,35 @@ public class OptimizationJobResource {
     }
 
     /**
-     * GET run
+     * GET run main function
      */
     @GetMapping("/run")
     public ResponseEntity run() throws Exception {
 
-        ModifyTreeMap<CampaignRecordDTO, CounterMap<EventType>> stateTree = new ModifyTreeMap<>();
+        ModifyTreeMap<CampaignRecordDTO, CounterMap<EventType>> stateTree = new ModifyTreeMap<>(); //Temporary data holder for calculating process
 
         Instant instNow = Instant.now();
         Long deltaInst = 3600L*24L*14L;
-        TreeSet<EventDTO> events = new TreeSet<>();
 
+        //Temporary event data holder
+        TreeSet<EventDTO> events = new TreeSet<>(); //TODO In next stage integrations it could be events consumer
+
+        //Process filling of event data holder
         try {
             eventRepository.findAllByCreatedBetween(instNow.minusSeconds(deltaInst), instNow).get()
                 .forEach(event -> events.add(eventMapper.toDto(event)));
             log.debug("Received events are {}", events);
         }
         catch (Exception e) {
-            log.debug(e.getLocalizedMessage(), e);
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            log.debug(e.getLocalizedMessage(), e);//When no event in range found
+            return new ResponseEntity(HttpStatus.NOT_FOUND); //TODO It should be transform to child class of ResponseEntity
         }
 
         for (EventDTO event : events
             ) {
             log.debug("Start processing event: {}", event);
 
-            CampaignRecordDTO campaignRecordDTO = getCampaignRecordDTObyevent(event);
+            CampaignRecordDTO campaignRecordDTO = getCampaignRecordDTObyEvent(event);
 
             CounterMap<EventType> thresholdState = Optional.ofNullable(stateTree.get(campaignRecordDTO))
                 .orElse(new CounterMap<>(EventType.class));
@@ -119,10 +114,17 @@ public class OptimizationJobResource {
 
         stateTree.forEach((key, value) -> log.debug("record from stateTree {} {}", key, value));
         validateBlackList(stateTree);
-        return new ResponseEntity(resultArr, HttpStatus.OK);
+        return new ResponseEntity(resultArr, HttpStatus.OK); //TODO It should be transform to child class of ResponseEntity
     }
 
-    private CampaignRecordDTO getCampaignRecordDTObyevent(EventDTO event) {
+    /**
+     * Method which return the Campaign-Publisher pair by received event
+     * as CampaignRecords Entity DTO
+     *
+     * @param event received event
+     * @return CampaignRecordDTO as pair campaign-Publisher
+     */
+    private CampaignRecordDTO getCampaignRecordDTObyEvent(EventDTO event) {
         Campaign campaign = campaignRepository.findOne(event.getCampaignId());
         Publisher publisher = publisherRepository.findOne(event.getPublisherId());
         CampaignRecord campaignRecord = campaignRecordRepository
@@ -131,9 +133,9 @@ public class OptimizationJobResource {
     }
 
     /**
-     * Getting EventType by Event and Campaign Props
+     * Getting EventType by Event and Campaign Optimization Props
      *
-     * @param event event which we have processed
+     * @param event event which we have to processed
      * @return EventType: EventType.SOURCE_EVENT or EventType.MEASURED_EVENT
      */
     private EventType getEventType(Event event) {
@@ -186,11 +188,17 @@ public class OptimizationJobResource {
         log.debug("and in blacklist present: {}", inBlackList);
 
         log.debug("Check threshold {}", threshold);
+
+        //The Condition One -- sourceEvent less then threshold
         if (sEventsAll < threshold) {
+            //If The Condition One ia true -- remove from the blacklist
             if (inBlackList) removeFromBlackList(blackList, publisher);
         } else {
+            //Calculate real ratio for decides in The Condition Two
             Float realRatio = (mEventsAll.floatValue() / sEventsAll.floatValue())*100.00F;//TODO Is ratio in percent?
             log.debug("Check ratioThreshold {} when real compiled as {}%", ratioThreshold, realRatio);
+
+            //If The Condition Two is false, it should be in blacklist, else should not be in blacklist
             if(realRatio < ratioThreshold){
                 if(!inBlackList) addToBlackList(blackList, publisher);
             } else { if(inBlackList) removeFromBlackList(blackList, publisher); }
@@ -208,8 +216,9 @@ public class OptimizationJobResource {
             .findBlackListRecordByBlackListAndPublisher(blackList, publisher).get();
         blackListRecordRepository.delete(blackListRecord);
         resultArr.increment(ResultSet.REMOVED);
-        log.debug("Publisher {} was removed from blacklist in campaign {}", publisher, campaignRepository.getByBlacklist(blackList));
-        //TODO we Could this make publisher remove notification
+        log.debug("Publisher {} was removed from blacklist in campaign {}", publisher,
+                                                                            campaignRepository.getByBlacklist(blackList));
+        //TODO In this place of code we could implement notify publisher about removing from the Blacklist
     }
 
     /**
@@ -224,7 +233,8 @@ public class OptimizationJobResource {
         blackListRecord.setPublisher(publisher);
         blackListRecordRepository.save(blackListRecord);
         resultArr.increment(ResultSet.ADDED);
-        log.debug("Publisher {} was added from blacklist in campaign {}", publisher, campaignRepository.getByBlacklist(blackList));
-        //TODO we Could this make publisher remove notification
+        log.debug("Publisher {} was added from blacklist in campaign {}", publisher,
+                                                                            campaignRepository.getByBlacklist(blackList));
+        //TODO In this place of code we could implement notify publisher about adding to the Blacklist
     }
 }
