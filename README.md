@@ -2,9 +2,55 @@
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 # optimizationJob
-This application was generated using JHipster 4.14.2, you can find documentation and help at [http://www.jhipster.tech/documentation-archive/v4.14.2](http://www.jhipster.tech/documentation-archive/v4.14.2).
 
-## Development
+## What we have to do?
+We achieve quality goals with optimize campaigns by blacklist publishers who do not qualify campaign's expectations.
+So, we have two conditions which put the publisher to the campaign's blacklist:
+
+    publisher have equile or more then _threshold_ _sourceEvents_ 
+    publisher have _measureEvents_ less then _ratioThreshold_ % of _sourceEvents_
+    for this task we compute time range: from `LocaldateTime.now()` to `this time minus 3600*24*12 seconds`
+
+## Stage 1. Modeling.
+I'd better use for this task EventSourcing with immutable Events, but time limit forcing me use DDD architecture task design.
+So, as result of my meditation, I have next model:
+![optimizationJob-model-asDDD](optJobModel-jdl.png)
+This model develop with [JHipster JDL Studio](https://start.jhipster.tech/jdl-studio/)
+
+## Stage 2. 
+Using [JHipster Online](https://start.jhipster.tech) make up new applications, applying [JDL-Model](optjob.jh)
+Put it on [GitHub optimizationJob repository](https://github.com/Aqueelone/optimizationJob) 
+
+## Stage 3.
+As a spike, use command
+`jhipster spring-controler optimizationJob` 
+and generate a skeleton for our task spring controller
+
+Such as we are TDD's like team, develop [optimizationJob IntegrationTest](src/test/java/com/acceptic/test/opt/web/rest/OptimizationJobResourceIntTest.java)
+
+Start `./gradlew optJobTest` (special gradle test task for our needing which we develop).. All tests are "red" and it is expected..
+
+## Stage 4.
+Start develop main task as [optimizationJobResourceRESTController](src/main/java/com/acceptic/test/opt/web/rest/OptimizationJobResource.java)
+
+Some decisions:
+[EventType Enum](src/main/java/com/acceptic/test/opt/domain/enumeration/EventType.java) --so.. we have two types of event and the good idea it is as enum
+
+[ResultSet Enum](src/main/java/com/acceptic/test/opt/domain/enumeration/EventType.java) --so.. we have two work result types, enum could be used such as in main stage, such as in test class too... 
+
+[CounterMap which extend EnumMap](src/main/java/com/acceptic/test/opt/web/rest/util/CounterMap.java)  -- EnumMap is better for our event holding with enum types, but we extend at because we implement quickly incrementing, it better compile (because we defined strong using Long) and `toJson` functionality which we could use in tests
+
+[Publisher-in-Campaign Event Holder as CounterMap<EventType>](src/main/java/com/acceptic/test/opt/web/rest/OptimizationJobResource.java) -- it performance up when using `in big tree`
+
+[resultSet as CounterMap<ResaltSet>](src/main/java/com/acceptic/test/opt/web/rest/OptimizationJobResource.java) good for result and [using in test](src/test/java/com/acceptic/test/opt/web/rest/OptimizationJobResourceIntTest.java) for catch expected result
+
+[ModifyTreeMap which extend TreeMap](src/main/java/com/acceptic/test/opt/web/rest/util/ModifyTreeMap.java) --so.. we use TreeMap with [CampaignRecords Entity](src/main/java/com/acceptic/test/opt/domain/CampaignRecord.java) as key, where we define two-dimension comparator (the first dimension is `campaign` and second dimension is `publisher` -- this is good help for build red-black search tree, based for TreeMap), additionally we implement `quick replace` functionality, it accelerate this operations because `compiler know` about our CounterMap as the possible value of it and reserve constant certain `block of memory` for each key-value pair, therefore our `quick replace` is workable 
+
+[Strong DRY compliance](src/main/java/com/acceptic/test/opt/web/rest/OptimizationJobResource.java) --in conjunct with `logger debug messages` it make debug process easy 
+
+Start `./gradlew optJobTest`... All tests are `green` and passed
+
+## Stage 5. Build our application in developer mode
 
 Before you can build this project, you must install and configure the following dependencies on your machine:
 
@@ -20,12 +66,34 @@ You will only need to run this command when dependencies change in [package.json
 
 We use yarn scripts and [Webpack][] as our build system.
 
+Clone this project to local machine with 'git clone'
 
-Run the following commands in two separate terminals to create a blissful development experience where your browser
-auto-refreshes when files change on your hard drive.
+Run the following commands in terminal from _project_root_ :
 
-    ./gradlew
+    ./gradlew buildNeeded initPath yarn 
     yarn start
+
+After this we stop it with `cntl+C` caused there is no need to change the graphic design
+And start our applications with command
+
+    ./gradlew bootRun
+
+In localhost:8080 we could see it as the workable one.
+In menu `Entities` we could choose some entity type and add it
+In menu `Administration\API` we could choose our `optimizationJobResource` and try use it 
+
+## Some possible TODOs
+
+1. It possible would be implemented with EventSourcing Architecture Design with immutable event
+2. It possible would be integrated with Apache Kafka (it is `in box` possible on JHipster) ane we'll could do producer\consumer message processing
+3. It possible would be done with using microservice architecture as `blacklist microservice`, `event receiving microservice` and `campaign holding microservice`
+4. It possible would be done with JHipster 5 (It use Spring 5, Spring Boot 2 and ReactJS), but now it in `beta stage` 
+
+## Using framework...
+
+This application was generated using JHipster 4.14.2, you can find documentation and help at [http://www.jhipster.tech/documentation-archive/v4.14.2](http://www.jhipster.tech/documentation-archive/v4.14.2).
+
+## Additional development with JHipster
 
 [Yarn][] is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
 specifying a newer version in [package.json](package.json). You can also run `yarn update` and `yarn install` to manage dependencies.
