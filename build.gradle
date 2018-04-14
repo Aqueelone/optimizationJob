@@ -49,7 +49,7 @@ dependencyManagement {
 defaultTasks 'bootRun'
 
 group = 'com.acceptic.test.opt'
-version = '0.0.1-SNAPSHOT'
+version = '0.5.1'
 
 description = ''
 
@@ -231,3 +231,8 @@ if (project.hasProperty('nodeInstall')) {
 compileJava.dependsOn processResources
 processResources.dependsOn cleanResources,bootBuildInfo
 bootBuildInfo.mustRunAfter cleanResources
+
+//Test for main goal of project
+task optJobTest(type: Test){
+    filter { includeTestsMatching '*OptimizationJob*' }
+}
